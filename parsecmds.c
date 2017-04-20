@@ -2,19 +2,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <unistd.h>
+#include "parsecmds.c"
 
-typedef struct{
-    int total;
-    int write_c;
-    int read_c;
-    char *write;
-    char *read;
-    char **prog_args;
-} Arguments;
-
-
-Arguments parse_string(char* input) {
-    static Arguments arguments;
+Command parse_string(char* input) {
+    static Command arguments;
     int in = 0, out = 0;
     bool quote = false;
     bool write = false;
@@ -71,7 +63,7 @@ Arguments parse_string(char* input) {
 }
 
 
-void shellparse(Arguments arguments) {
+void shellparse(Command arguments) {
     arguments.total ==1 ? printf("Run program \"%s\".", arguments.prog_args[0]) : printf("Run program \"%s\" ", arguments.prog_args[0]);
     if (arguments.total - 1 == 1)
         printf("with argument \"%s\".", arguments.prog_args[1]);
@@ -85,64 +77,6 @@ void shellparse(Arguments arguments) {
         printf(" Read the input from file \"%s\".", arguments.read);
     if (arguments.write_c == 1)
         printf(" Write the output to file \"%s\".", arguments.write);
-
 }
 
 
-int main() {
-    char *line = NULL;
-    size_t size;
-    if (getline(&line, &size, stdin) == -1) {
-        printf("No line\n");
-    }else {
-        shellparse(parse_string(line));
-
-
-    }
-}
-
-
-//if (input[in] == '>' || input[in] == '<') {
-//input[in] == '>' ? (arguments.write_c = 1) : (arguments.read_c = 1);
-//int c = 0;
-//in += 2;
-//while (input[in] != ' ' && input[in] != '\n') {
-//arguments.write_c == 1 ? (arguments.write[c++] = input[in++]) : (arguments.read[c++] = input[in++]);
-//}
-//} else if (input[in] == '\"') {
-//quote_count++;
-//in++;
-//} else if (input[in] == ' ')
-//in++;
-//else {
-//if (quote_count % 2 == 0) {
-//char *inter = calloc((size_t) strlen(input), sizeof(char));
-//int inter_count = 0;
-//while (input[in] != ' ' && input[in] != '\n') {
-//if (input[in] == '\"') {
-//quote_count++;
-//break;
-//}
-//inter[inter_count++] = input[in++];
-//}
-//arguments.total++;
-//arguments.prog_args[out] = inter;
-//arguments.count[out] = inter_count;
-//out++;
-//} else {
-//char *inter = calloc((size_t) strlen(input), sizeof(char));
-//int inter_count = 0;
-//while (input[in] != ' ' && quote_count % 2 != 0) {
-//if (input[in] == '\"'){
-//quote_count++;
-//in++;
-//}
-//else
-//inter[inter_count++] = input[in++];
-//}
-//arguments.total++;
-//arguments.prog_args[out] = inter;
-//arguments.count[out] = inter_count;
-//out++;
-//}
-//}
