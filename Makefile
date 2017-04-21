@@ -1,5 +1,5 @@
-shellsplit: getcmds.c
-	gcc -o shellsplit getcmds.c
+runcmds: runcmds.c
+	gcc -o runcmds runcmds.c
 
 clean:
-	rm *.o shellsplit
+	rm *.o runcmds

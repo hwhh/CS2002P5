@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <unistd.h>
-#include "parsecmds.c"
+#include "commands.h"
 
 Command parse_string(char* input) {
     static Command arguments;
