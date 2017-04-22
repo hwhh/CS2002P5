@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "parsecmds.c"
 
+///Main function to read a line in from stdin and parse it
 int main() {
     char *line = NULL;
     size_t size;
