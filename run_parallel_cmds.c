@@ -48,7 +48,6 @@ int main(int argc, char *argv[]){
             (*com).command = parse_string(lines[no_of_args+i]);
             (*com).id = no_of_args+i;
             pthread_create (&thread_id[i], NULL , run, (void *) com);
-
         }
         for(int i=0;i<no_of_threads;i++) {
             if(no_of_args+i >= count)

@@ -6,25 +6,25 @@
 #include "parsecmds.c"
 
 
-void runWrite(int file, Command commands, char * cwd, char *args[]){
-    if(file < 0) {
-        printf("Write failed: %s\n", commands.write);
-        return;
-    }
-    if(dup2(file,1) < 0)    return;
-    execv(cwd, args);
-    close(file);
-}
-
-void runRead(int file, Command commands, char * cwd, char *args[]){
-    if (file < 0) {
-        printf("Read failed: %s \n", commands.read);
-        return;
-    }
-    if (dup2(file, 1) < 0) return;
-    execv(cwd, args);
-    close(file);
-}
+//void runWrite(int file, Command commands, char * cwd, char *args[]){
+//    if(file < 0) {
+//        printf("Write failed: %s\n", commands.write);
+//        return;
+//    }
+//    if(dup2(file,1) < 0)    return;
+//    execv(cwd, args);
+//    close(file);
+//}
+//
+//void runRead(int file, Command commands, char * cwd, char *args[]){
+//    if (file < 0) {
+//        printf("Read failed: %s \n", commands.read);
+//        return;
+//    }
+//    if (dup2(file, 1) < 0) return;
+//    execv(cwd, args);
+//    close(file);
+//}
 
 void runParrallel(char* output, int id){
     char filename[1024];
@@ -50,7 +50,8 @@ void runcmds(Command commands, int id){
     }
     args[commands.total] = NULL;
     char path[1024] = "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/";
-    if (commands.write_c == 1){
+    //printf("%s", commands.prog_args[0]);
+    if (strlen (commands.write) > 0){
         char *dir = strcat(path, commands.write);
         int file = open(dir,O_CREAT|O_WRONLY|O_APPEND,S_IRWXU);
         if(file < 0) {
@@ -58,7 +59,7 @@ void runcmds(Command commands, int id){
                 char dest[50];
                 strcpy(dest, "Write failed: ");
                 strcat(dest, commands.write);
-                 runParrallel(dest, id);
+                runParrallel(dest, id);
             }else
                 printf("Write failed: %s \n", commands.write);
             return;
@@ -66,7 +67,7 @@ void runcmds(Command commands, int id){
         if(dup2(file,1) < 0)    return;
         execv(cwd, args);
         close(file);
-    }if (commands.read_c == 1) {
+    }if (strlen (commands.read) > 0) {
         char *dir = strcat(path, commands.read);
         int file = open(dir, O_RDONLY);
         if (file < 0) {
@@ -83,19 +84,19 @@ void runcmds(Command commands, int id){
         execv(cwd, args);
         close(file);
     }if(id >= 0){
-            char filename[1024];
-            char *dir = snprintf(filename, sizeof(filename), "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/temp/output%d.txt", id);
-            int file = open(filename,O_CREAT|O_WRONLY|O_TRUNC |O_APPEND, S_IRWXU);
-            if(file < 0) {
-                return;
-            }
-            if(dup2(file,1) < 0)    return;
-            execv(cwd, args);
-            close(file);
-    }else {
+        char filename[1024];
+        char *dir = snprintf(filename, sizeof(filename), "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/temp/output%d.txt", id);
+        int file = open(filename,O_CREAT|O_WRONLY|O_TRUNC |O_APPEND, S_IRWXU);
+        if(file < 0) { return; }
+        if(dup2(file,1) < 0)    return;
         int r = execv(cwd, args);
-        if (r < 0) printf("Execute failed: %s", cwd);
+        if (r < 0 ) { printf("Execute failed: %s", cwd); }
+        close(file);
+    } else {
+        int r = execv(cwd, args);
+        if (r < 0){printf("Execute failed: %s", cwd); }
     }
+
     free(commands.write);
     free(commands.read);
     free(commands.prog_args);
