@@ -50,7 +50,6 @@ void runcmds(Command commands, int id){
     }
     args[commands.total] = NULL;
     char path[1024] = "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/";
-    //printf("%s", commands.prog_args[0]);
     if (strlen (commands.write) > 0){
         char *dir = strcat(path, commands.write);
         int file = open(dir,O_CREAT|O_WRONLY|O_APPEND,S_IRWXU);
