@@ -4,99 +4,95 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "parsecmds.c"
-
-
-//void runWrite(int file, Command commands, char * cwd, char *args[]){
-//    if(file < 0) {
-//        printf("Write failed: %s\n", commands.write);
-//        return;
-//    }
-//    if(dup2(file,1) < 0)    return;
-//    execv(cwd, args);
-//    close(file);
-//}
-//
-//void runRead(int file, Command commands, char * cwd, char *args[]){
-//    if (file < 0) {
-//        printf("Read failed: %s \n", commands.read);
-//        return;
-//    }
-//    if (dup2(file, 1) < 0) return;
-//    execv(cwd, args);
-//    close(file);
-//}
-
-void runParrallel(char* output, int id){
-    char filename[1024];
-    snprintf(filename, sizeof(filename), "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/temp/output%d.txt", id);
-    int file = open(filename,O_CREAT| O_TRUNC |O_WRONLY|O_APPEND, S_IRWXU);
-    if(dup2(file,1) < 0)    return;
-    printf(output);
-    printf("\n");
-    close(file);
+///Gets the current directory and appends a black slash to end
+char *get_dir(){
+    static char cwd[1024]; //Define static array to store result
+    getcwd(cwd, sizeof(cwd)); //Get current directory
+    strcat(cwd,"/"); //Append backslash
+    return cwd;
 }
 
-void runcmds(Command commands, int id){
-    //char cwd[1024];
-    //getcwd(cwd, sizeof(cwd));
-    //strcat(cwd,"/");
-    //strcat(cwd, commands.prog_args[0]);
-    //char *cwd = "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Test/print_args.sh";
-    const char *cwd = commands.prog_args[0];
-    char *args[commands.total];
-    args[0] = commands.prog_args[0];
-    for(int i = 1; i < commands.total; i++){
-        args[i] = commands.prog_args[i];
-    }
-    args[commands.total] = NULL;
-    char path[1024] = "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/";
-    if (strlen (commands.write) > 0){
-        char *dir = strcat(path, commands.write);
-        int file = open(dir,O_CREAT|O_WRONLY|O_APPEND,S_IRWXU);
-        if(file < 0) {
-            if(id>=0) {
-                char dest[50];
-                strcpy(dest, "Write failed: ");
-                strcat(dest, commands.write);
-                runParrallel(dest, id);
-            }else
-                printf("Write failed: %s \n", commands.write);
-            return;
-        }
-        if(dup2(file,1) < 0)    return;
-        execv(cwd, args);
-        close(file);
-    }if (strlen (commands.read) > 0) {
-        char *dir = strcat(path, commands.read);
-        int file = open(dir, O_RDONLY);
-        if (file < 0) {
-            if (id >= 0) {
-                char dest[50];
-                strcpy(dest, "Read failed: ");
-                strcat(dest, commands.read);
-                runParrallel(dest, id);
-            } else
-                printf("Read failed: %s \n", commands.read);
-            return;
-        }
-        if (dup2(file, 1) < 0) return;
-        execv(cwd, args);
-        close(file);
-    }if(id >= 0){
-        char filename[1024];
-        char *dir = snprintf(filename, sizeof(filename), "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/temp/output%d.txt", id);
-        int file = open(filename,O_CREAT|O_WRONLY|O_TRUNC |O_APPEND, S_IRWXU);
-        if(file < 0) { return; }
-        if(dup2(file,1) < 0)    return;
+
+///Write the output of parallel calls to separate files
+void run_parrallel(char* output, const char *cwd, char * args[],int id){
+    char filename[1024]; //Creates array to hold path
+    snprintf(filename, sizeof(filename), "output%d.txt", id); //Creates path to file
+    int file = open(filename,O_CREAT| O_TRUNC |O_WRONLY|O_APPEND, S_IRWXU); //Opens the file
+    if(dup2(file,1) < 0) return; //If file opened successfully divert output
+    if(output != NULL) { //If not a command to be executed
+        printf("%s", output); //Write input to file
+        printf("\n");
+    }else{ //Else execute the command
         int r = execv(cwd, args);
         if (r < 0 ) { printf("Execute failed: %s", cwd); }
-        close(file);
+    }
+    close(file);// Close file
+}
+///Write output to a file, given the directory and the program arguments
+void run_write(char * dir, int id, Command commands, const char * cwd, char *args[]){
+    int file = open(dir,O_CREAT|O_WRONLY|O_APPEND,S_IRWXU); //Opens / creates file with correct permissions
+    if(file < 0) { //Error checking
+        if(id>=0) { //If call from parallel output to correct file
+            char dest[50];
+            strcpy(dest, "Write failed: ");
+            strcat(dest, commands.write);
+            run_parrallel(dest,cwd, args ,id);
+        }else//Otherwise print to stdout
+            printf("Write failed: %s \n", commands.write);
+        return;
+    }
+    if(dup2(file,1) < 0) return;//If file opened successfully divert output
+    execv(cwd, args);//Execute command
+    close(file);// Close file
+}
+
+///Read input from a file, given the directory and the program arguments
+void run_read(char * dir, int id, Command commands,const char * cwd, char *args[]){
+    int file = open(dir, O_RDONLY); //Opens file in read only mode
+    if (file < 0) {
+        if (id >= 0) { //Error checking
+            char dest[50]; //If call from parallel output to correct file
+            strcpy(dest, "Read failed: ");
+            strcat(dest, commands.read);
+            run_parrallel(dest,cwd, args ,id);
+        } else //Otherwise print to stdout
+            printf("Read failed: %s \n", commands.read);
+        return;
+    }
+    if (dup2(file, 1) < 0) return; //If file opened successfully divert output
+    execv(cwd, args); //Execute command
+    close(file); // Close file
+    return;
+}
+
+///Given a command and an id run the command
+void runcmds(Command commands, int id){
+    char *path = get_dir(); //Get the current directory
+    const char *cwd = commands.prog_args[0]; //The name of the program to be executed
+    char *args[commands.total]; //Create the arguments array
+    args[0] = commands.prog_args[0]; //The name of the program to be executed
+    for(int i = 1; i < commands.total; i++){ //Add all of the arguments from the command to the arguments array
+        args[i] = commands.prog_args[i];
+    }
+    args[commands.total] = NULL; //Add null to end of arguments array
+    if (strlen (commands.write) > 0){ //Write
+        char *dir = strcat(path, commands.write); //Add the file name to the path
+        run_write(dir,id ,commands, cwd, args);
+        return;
+    }if (strlen (commands.read) > 0) { //Read
+        char *dir = strcat(path, commands.read); //Add the file name to the path
+        run_read(dir,id ,commands, cwd, args);
+        return;
+    }if(id >= 0){//If call from parallel
+        run_parrallel(NULL,cwd, args ,id);
+        return;
     } else {
-        int r = execv(cwd, args);
+        int r = execv(cwd, args); //If standard call
         if (r < 0){printf("Execute failed: %s", cwd); }
     }
-
+    //Free arrays
     free(commands.write);
     free(commands.read);
     free(commands.prog_args);
 }
+

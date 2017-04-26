@@ -27,6 +27,7 @@ int main() {
             exit(78); //Stop child process
         }
     }
+    return 0;
 }
 
 

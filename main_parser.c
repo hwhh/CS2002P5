@@ -10,4 +10,5 @@ int main() {
     }else {
         shellparse(parse_string(line)); //Parse each line
     }
+    return 0;
 }

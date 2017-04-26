@@ -33,7 +33,7 @@ void print_out(int count){
     for(int i = 0; i < count; i++){ //Loop number of lines input times
         //Create the paths to the output files
         char filename[1024];
-        snprintf(filename, sizeof(filename), "/Users/henryhargreaves/Documents/University/Year_2/CS2002/Practicals/CS2002P5/Practical-SP/temp/output%d.txt", i);
+        snprintf(filename, sizeof(filename), "output%d.txt", i);
         //Read in file and output contents to stdin
         int file = open(filename,O_RDONLY);
         ssize_t bytes = read(file, &buf, sizeof(buf) - 1); buf[bytes]='\0';
@@ -73,6 +73,6 @@ int main(int argc, char *argv[]){
     }
     free(com);
     print_out(count);
-
+    return 0;
 }
 

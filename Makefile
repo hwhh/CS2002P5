@@ -8,4 +8,4 @@ runparallelcmds: run_parallel_cmds.c
 	gcc -o runparallelcmds run_parallel_cmds.c
 
 clean:
-	rm *.o runcmds
+	rm *.o runcmds runparallelcmds shellsplit

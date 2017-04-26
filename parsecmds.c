@@ -55,7 +55,6 @@ Command parse_string(char* input) {
     }
     if(counter > 0 ){ //If the loop finished and there are characters still in the temp array append them
         if(write || read){//Check if read or write is set
-            write ? !write : !read;
             write ? (arguments.write = temp) : (arguments.read = temp);
         }else {//Append the temp array to the 2d program arguments array
             arguments.total++;
